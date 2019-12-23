@@ -2,10 +2,14 @@ const WebSocket = require('ws');
 const ProfanityFilter = require('./src/profanity_filter');
 const MessageHistory = require('./src/message_history');
 
+const ws_port = 3000;
 const profanity_filter = new ProfanityFilter("./data/list.txt");
-const listen_handle = new WebSocket.Server({port: 3000});
+const listen_handle = new WebSocket.Server({port: ws_port});
 const message_history = new MessageHistory();
 let array_login_timestamp = [];
+
+const command_keyword_popular = "popular";
+const command_keyword_state = "state";
 
 listen_handle.on('connection', function connection(client_handle) {
 
@@ -63,10 +67,10 @@ function broadcast_msg(clients, client_handle, message) {
  * @return void
  */
 function do_command(message, client_handle) {
-    if (0 === message.indexOf("/popular")) {
+    if (0 === message.indexOf("/" + command_keyword_popular)) {
         let res_str = command_popular();
         client_handle.send("\n\t" + res_str);
-    } else if (0 === message.indexOf("/stats")) {
+    } else if (0 === message.indexOf("/" + command_keyword_state)) {
         let array_args = message.split(" ");
         let user_name = "";
         if (array_args.length > 1) {
