@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "inquirer": "^6.2.0",
+    "level": "^6.0.0",
     "ws": "^7.2.1"
   },
   "devDependencies": {
