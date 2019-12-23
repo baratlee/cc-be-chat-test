@@ -2,6 +2,9 @@ run `node index.js` in terminal to run the chat client
 
 Operating environment Linux or MacOS
 
+# --This's "after test" branch--
+Modifications are out of 24h in this branch, just Practice my ideas.
+
 ### --start chat server--
 node server.js
 
