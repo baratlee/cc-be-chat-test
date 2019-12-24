@@ -1,4 +1,5 @@
-var levelup = require('levelup');
+var levelup = require('levelup')
+var leveldown = require('leveldown')
 
 const database_path = "./data";
 
@@ -11,21 +12,27 @@ class DataBaseInterface {
         // 缓存
         DataBaseInterface.instance = this;
 
-        this.database = levelup('./data');
+        this.database = levelup(leveldown('./data'));
 
         return this;
     }
 
-    kv_get(key) {
-        this.database.get(key);
+    kv_get(key, callback) {
+        this.database.get(key, function (error, value) {
+            callback(error, value);
+        });
     }
 
-    kv_put(key, value) {
-        this.database.put(key);
+    kv_put(key, value, callback) {
+        this.database.put(key, value, function (error) {
+            callback(error);
+        })
     }
 
-    kv_delete(key) {
-        this.database.delete(key);
+    kv_delete(key, callback) {
+        this.database.del(key, function (error) {
+            callback(error);
+        })
     }
 }
 

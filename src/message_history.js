@@ -1,9 +1,40 @@
 const MessageRecord = require('./message_record');
+const DatabaseInterface = require('./util/database_interface');
+let db_if = new DatabaseInterface();
 
 class MessageHistory {
     constructor() {
         this.history = [];
         this.next_uid = 0;
+        let inner_this = this;
+        db_if.kv_get('next_uid', function (error, value) {
+            if(error){
+                console.log("MessageHistory constructor. value:" + value + "  next_uid:"+inner_this.next_uid+ "  error"+error);
+            } else {
+                let next_uid_value =  Number(value);
+                if(typeof next_uid_value === 'number' && !isNaN(next_uid_value)) {
+                    inner_this.next_uid = Number(value);
+                    for (let i = inner_this.next_uid;i >= 0;i--) {
+                        db_if.kv_get('uid'+i, function (rec_error, rec_value) {
+                            if(error || rec_value == undefined || rec_value == 'undefined'){
+                                console.log("get rec history error:"+rec_error);
+                            } else {
+                                if(typeof(rec_value) === 'object') {
+                                    let msg_rec = new MessageRecord('', '');
+                                    msg_rec.init_from_json(rec_value);
+                                    inner_this.history[i] = msg_rec;
+                                }else{
+                                    console.log("get rec history error2:" + typeof(rec_value));
+                                }
+
+                            }
+                        });
+                    }
+                }
+                inner_this.next_uid += 1;
+                // console.log("MessageHistory constructor. value:" + next_uid_value + "  next_uid:"+inner_this.next_uid);
+            }
+        });
     }
 
     /**
@@ -12,8 +43,20 @@ class MessageHistory {
      * @return void
      */
     add_message(user_name, message) {
-        this.history[this.next_uid] = new MessageRecord(user_name, message);
+        let msg_rec = new MessageRecord(user_name, message);
+        this.history[this.next_uid] = msg_rec;
         this.next_uid = this.next_uid + 1;
+        let inner_this = this;
+        db_if.kv_put('next_uid',this.next_uid.toString(), function (error) {
+            // TODO check error
+        });
+        db_if.kv_put('uid'+this.next_uid,msg_rec.get_str(), function (error) {
+            // TODO check error
+        });
+        db_if.kv_get('next_uid', function (error, value) {
+            // TODO check error
+            inner_this.next_uid = +value;
+        });
     }
 
     /**
@@ -26,7 +69,13 @@ class MessageHistory {
         receiver.send("\n");
         for (let i = Math.max(this.next_uid - 1 - max, 0); i < this.next_uid; i++) {
             let msg_rec = this.history[i];
-            receiver.send(msg_rec.user_name + ":" + msg_rec.message);
+            if (msg_rec != null && msg_rec != undefined && 'object' == typeof msg_rec){
+                receiver.send(msg_rec.user_name + ":" + msg_rec.message);
+            }
+            else{
+                // TODO check error
+                // console.log("msg_rec error:"+msg_rec+" "+typeof(msg_rec));
+            }
         }
     }
 
