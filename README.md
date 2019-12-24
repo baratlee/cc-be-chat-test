@@ -3,6 +3,7 @@ run `node index.js` in terminal to run the chat client
 Operating environment Linux or MacOS
 
 Another "after_test" branch is Modifications after 24h, do my Practice.
+And Successfully use leveldb to persist data in "after_test" branch.
 
 ### --start chat server--
 node server.js
